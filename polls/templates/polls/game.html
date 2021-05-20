@@ -1,0 +1,16 @@
+{% extends 'polls/base.html' %}
+
+{% block content %}
+{{id}}!!
+There was a game: 
+{{gm.team1_name}} vs {{gm.team2}}!!
+{{ team1_name }} vs {{ team2_name }}, and the winner was {{ winner_name }}
+
+
+    Edit game:
+    <form method="post" action="#">
+        {% csrf_token %}
+        {{form.as_p}}
+        <button type="submit" name="save">Update</button>
+    </form>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends 'polls/base.html' %}
+
+{% block content %}
+Teams:
+
+{% for t in teams %}
+    <div>
+        {{t.id}}:
+        {{t.name}}
+
+        {% include "../polls/team_summary.html" with team=t %}
+    </div>
+{% endfor %}
+<br>
+<hr>
+<br>
+Create team:
+<form method="post" action="/teams">
+    {% csrf_token %}
+    {{form.as_p}}
+    <button type="submit" name="save">Create New</button>
+</form>
+{% endblock %}

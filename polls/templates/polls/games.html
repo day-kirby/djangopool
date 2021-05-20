@@ -1,0 +1,30 @@
+{% extends 'polls/base.html' %}
+
+{% block content %}
+Games:
+
+{% for g in games %}
+    <div>
+        <a href="/editgame{{g.id}}">{{g.id}}</a>
+        :
+        {{g.team1}}
+        vs.
+        {{g.team2}}
+        . Winner: {{g.winner}}
+    </div>
+    {% endfor %}
+
+    <br>
+    <hr>
+    <br>
+
+    Create game:
+    <form method="post" action="#">
+        {% csrf_token %}
+        {{form.as_p}}
+        <button type="submit" name="save">Create New</button>
+    </form>
+    {% if msg != '' %}
+        {{msg}}
+    {% endif %}
+{% endblock %}
