@@ -4,16 +4,61 @@ from django.http.response import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from django.db.models import Count
-from .models import Game, Team
-from .forms import CreateNewTeam, CreateNewGame
+from .models import Game, Team, Player, Pick
+from .forms import CreateNewPlayer, CreateNewTeam, CreateNewGame, CreateNewPick
 
-def index(request, id):
-    gm = Game.objects.get(id=id)
-    tm1 = Team.objects.get(id=gm.team1_id)
-    tm2 = Team.objects.get(id=gm.team2_id)
-    winner = Team.objects.get(id=gm.winner_id)
-    context = { 'game': gm, 'team1_name': tm1.name, 'team2_name': tm2.name, 'winner_name': winner.name }
-    return render(request, 'polls/thing.html', context)
+def index(request):
+    players = Player.objects.all()
+
+    if request.method == 'POST':
+        form = CreateNewPlayer(request.POST)
+        if(form.is_valid()):
+            n = form.cleaned_data["name"]
+            p = Player(name=n)
+            p.save()
+
+    else:
+        form = CreateNewPlayer()
+
+    context = { 'players': players, 'form': form }
+    return render(request, 'polls/players.html', context)
+
+    #garbage below
+    #gm = Game.objects.get(id=id)
+    #tm1 = Team.objects.get(id=gm.team1_id)
+    #tm2 = Team.objects.get(id=gm.team2_id)
+    #winner = Team.objects.get(id=gm.winner_id)
+    #context = { 'game': gm, 'team1_name': tm1.name, 'team2_name': tm2.name, 'winner_name': winner.name }
+    #return render(request, 'polls/thing.html', context)
+
+def player(request, id):
+
+    player = Player.objects.get(id=id)
+    picks = Pick.objects.filter(player=player.id)
+
+    # don't really need these, they are just for testing / experimenting
+    pick_ids = Pick.objects.filter(player=player.id).values('team_id') # returns id's of picked teams
+    picked_teams = Team.objects.filter(id__in=pick_ids)  # return queryset from Team filtered on the picks
+    winning_games = Game.objects.filter(winner__in=picked_teams) # returns queryset from Game where winners are only picked teams
+
+    if (request.method == 'POST'):
+        form = CreateNewPick(request.POST)
+        if(form.is_valid()):    
+            team = form.cleaned_data["team"]
+            pk = Pick(player=player,team=team)
+            pk.save()
+    else:
+        form = CreateNewPick()
+
+   
+    context = { # too much sent to template, just for testing
+        'p': player, 
+        'picks': picks, 
+        'form': form, 
+        'picked_teams': picked_teams, 
+        'winning_games': winning_games 
+    }
+    return render(request, 'polls/player.html', context)
 
 def updategame(request, id):
     gm = Game.objects.get(id=id)
@@ -66,8 +111,6 @@ def games(request):
                 context = { 'games': gms, 'form': form, 'msg': '' }
                 return render(request, 'polls/games.html', context)
 
-                #addr = "polls/editgame" + str(g.id)
-                #return HttpResponseRedirect(addr)
             else: 
                 msg = 'invalid!'
                 if(not valid_winner):

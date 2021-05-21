@@ -1,0 +1,28 @@
+{% extends 'polls/base.html' %}
+
+{% block content %}
+Players:
+
+{% for p in players %}
+    <div>
+        <a href="/player{{p.id}}">
+        {{p.id}}:
+        {{p.name}}
+        - Points: {{p.win_count}}
+        </a>
+    </div>
+{% endfor %}
+<br>
+<div class="pool-info">
+Players get a point for every game won by one of their picks.
+Click a player to manage their picks.
+</div>
+<hr>
+<br>
+Create player:
+<form method="post" action="#">
+    {% csrf_token %}
+    {{form.as_p}}
+    <button type="submit" name="save">Create New Player</button>
+</form>
+{% endblock %}

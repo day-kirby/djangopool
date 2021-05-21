@@ -1,0 +1,39 @@
+{% extends 'polls/base.html' %}
+
+{% block content %}
+Player: {{p.name}} 
+<br>
+<br>
+Picks:
+<br>
+{% for p in picks %}
+    <div>
+        {{p.id}}
+        {{p.team}}
+    </div>
+{% endfor %}
+<br>
+Games where one of these picks won: <br>
+{% for w in winning_games %}
+    <div>{{w.id}}:
+        {{w.team1}}
+        vs.
+        {{w.team2}}. Winner: {{w.winner}}
+    </div>
+{% endfor %}
+
+<hr>
+<br>
+
+Add a pick:
+
+    <form method="post" action="#">
+        {% csrf_token %}
+        {{form.as_p}}
+        <button type="submit" name="save">Add Pick</button>
+    </form>
+
+    <div class="pool-info">
+        No validation - player can pick the same team twice. Cannot delete pick.
+    </div>
+{% endblock %} 
