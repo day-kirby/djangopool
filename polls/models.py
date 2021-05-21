@@ -1,7 +1,6 @@
-#import datetime
-
 from django.db import models
-#from django.utils import timezone
+
+# note - none of these objects can be deleted through the app at this point
 
 class Player(models.Model): # user of pool, not player on a team
 
@@ -15,6 +14,8 @@ class Player(models.Model): # user of pool, not player on a team
     def win_count(self):
         # there should be a better way to do this!
         # e.g. get a set of all games where the winner is one of the picks
+        # note that the "player" view has an alternative way to get list of wins
+        # hoping to learn a one-liner for this
         picks = Pick.objects.filter(player=self.id)
         w = 0
         for p in picks:
@@ -32,14 +33,20 @@ class Team(models.Model):
 
     @property
     def win_count(self):
+        # number of games that a team is the winner
         return self.winner.count()
 
     def __str__(self) -> str:
         return self.name
 
 class Game(models.Model):
+    # teams that played the game
     team1 = models.ForeignKey(Team, related_name='team1', on_delete=models.DO_NOTHING)
     team2 = models.ForeignKey(Team, related_name='team2', on_delete=models.DO_NOTHING)
+    # winner of the game, by team id
+    # currently the winner can be a third team
+    # added validation is create form to avoid this case
+    # however, data migth be better if winner was a choice between "team1" and "team2"
     winner = models.ForeignKey(Team, related_name='winner', on_delete=models.DO_NOTHING)
 
     def __str__(self) -> str:
@@ -47,13 +54,17 @@ class Game(models.Model):
 
 class Pick(models.Model):
 
+    # player by player id, team by team id - player x picks team y
+    # nothing stops a player from having more than one identical pick
+    # could be a quick validation step in the form
+    # curious if this could be done with the model definition
     player = models.ForeignKey(Player, related_name='player', on_delete=models.DO_NOTHING)
     team = models.ForeignKey(Team, related_name='team', on_delete=models.DO_NOTHING)
 
     def __str__(self) -> str:
         return 'good choice'
 
-#models from original demo
+#models from original demo ---------
 
 #class Question(models.Model):
 #    question_text = models.CharField(max_length=200)

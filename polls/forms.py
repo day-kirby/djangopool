@@ -15,7 +15,7 @@ class CreateNewTeam(forms.Form):
 class CreateNewPick(forms.ModelForm):
     class Meta: 
         model = Pick
-        fields = ["team"]
+        fields = ["team"] # player not needed, will be selected in the forms's context
         #fields = ["player", "team"]
 
     #player = forms.ModelChoiceField(queryset=Player.objects.all().order_by('name'))

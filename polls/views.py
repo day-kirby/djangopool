@@ -7,7 +7,7 @@ from django.db.models import Count
 from .models import Game, Team, Player, Pick
 from .forms import CreateNewPlayer, CreateNewTeam, CreateNewGame, CreateNewPick
 
-def index(request):
+def index(request): # root of app lists players, could have called this view "players"
     players = Player.objects.all()
 
     if request.method == 'POST':
@@ -23,13 +23,6 @@ def index(request):
     context = { 'players': players, 'form': form }
     return render(request, 'polls/players.html', context)
 
-    #garbage below
-    #gm = Game.objects.get(id=id)
-    #tm1 = Team.objects.get(id=gm.team1_id)
-    #tm2 = Team.objects.get(id=gm.team2_id)
-    #winner = Team.objects.get(id=gm.winner_id)
-    #context = { 'game': gm, 'team1_name': tm1.name, 'team2_name': tm2.name, 'winner_name': winner.name }
-    #return render(request, 'polls/thing.html', context)
 
 def player(request, id):
 
@@ -60,26 +53,31 @@ def player(request, id):
     }
     return render(request, 'polls/player.html', context)
 
-def updategame(request, id):
-    gm = Game.objects.get(id=id)
-
 def editgame(request, id):
     gm = Game.objects.get(id=id)
-    tm1 = Team.objects.get(id=gm.team1_id)
-    tm2 = Team.objects.get(id=gm.team2_id)
-    winner = Team.objects.get(id=gm.winner_id)
+
+    # for testing, these are not needed
+    #tm1 = Team.objects.get(id=gm.team1_id)
+    #tm2 = Team.objects.get(id=gm.team2_id)
+    #winner = Team.objects.get(id=gm.winner_id)
 
     if request.method == 'POST':
         form = CreateNewGame(request.POST, instance=gm)
         if(form.is_valid()):    
-            form.save()       
-        context = { 'game': gm, 'team1_name': tm1.name, 'team2_name': tm2.name, 'winner_name': winner.name, 'form': form } 
+            form.save()     
+        context = { 'game': gm, 'form': form }  
+
+        #testing version:
+        #context = { 'game': gm, 'team1_name': tm1.name, 'team2_name': tm2.name, 'winner_name': winner.name, 'form': form } 
         return render(request, 'polls/game.html', context)
     else:
 
         form = CreateNewGame(instance=gm)
 
-        context = { 'game': gm, 'team1_name': tm1.name, 'team2_name': tm2.name, 'winner_name': winner.name, 'form': form }
+        context = { 'game': gm, 'form': form }  
+
+        #testing version:
+        #context = { 'game': gm, 'team1_name': tm1.name, 'team2_name': tm2.name, 'winner_name': winner.name, 'form': form }
         return render(request, 'polls/game.html', context)
 
 def games(request):
@@ -99,8 +97,11 @@ def games(request):
             t2_id = g.team2_id
             w_id = g.winner_id
 
+            # there is a team1, team2 and winner
             all_ids= (t1_id > 0) and (t1_id > 0) and (w_id > 0)
+            # team 1 and 2 are different
             diff_teams = (t1_id != t2_id)
+            # winner is one of the teams
             valid_winner = (t1_id == w_id) or (t2_id == w_id)
 
             if(all_ids and diff_teams and valid_winner):
@@ -112,6 +113,10 @@ def games(request):
                 return render(request, 'polls/games.html', context)
 
             else: 
+                # msg appears in template
+                # probably better that this content is in template
+                # and that their visibility is controlled by a status variable
+                # eg status = 'same_teams'
                 msg = 'invalid!'
                 if(not valid_winner):
                     msg = 'winner must be one of the teams'
@@ -130,7 +135,6 @@ def games(request):
 
 def teams(request):
     tms = Team.objects.all()
-    #tms = Team.objects.annotate(win_count=Count('winner')).all()
 
     if request.method == 'POST':
         form = CreateNewTeam(request.POST)
@@ -147,9 +151,3 @@ def teams(request):
     context = { 'teams': tms, 'form': form }
     return render(request, 'polls/teams.html', context)
 
-def test(request):
-    return HttpResponse("TEST!")
-    
-    #this doesn't work as an 'include'! 
-    # wht this does is redirect to another view
-    #return HttpResponseRedirect("../thing.html")

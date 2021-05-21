@@ -4,14 +4,15 @@
 
 There was a game: 
 
-{{ team1_name }} vs {{ team2_name }}, and the winner was {{ winner_name }}
+
+{{ game.team1 }}vs {{ game.team2 }}, and the winner was {{ game.winner }}
 
 <br><br><br>
     Edit game:
     <form method="post" action="#">
         {% csrf_token %}
         {{form.as_p}}
-        <button type="submit" name="save">Update</button>
+        <button type="submit" name="save">Save changes</button>
     </form>
 
 <br><br>
