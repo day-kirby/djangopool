@@ -4,24 +4,29 @@
 Player: {{p.name}} 
 <br>
 <br>
-Picks:
-<br>
-{% for p in picks %}
-    <div>
-        {{p.id}}
-        {{p.team}}
-    </div>
-{% endfor %}
-<br>
-Games where one of these picks won: <br>
-{% for w in winning_games %}
-    <div>{{w.id}}:
-        {{w.team1}}
-        vs.
-        {{w.team2}}. Winner: {{w.winner}}
-    </div>
-{% endfor %}
-
+{% if p.pick_count == 0 %}
+No picks yet
+{% endif %}
+{% if p.pick_count > 0 %}
+    Picks:
+    <br>
+    {% for p in picks %}
+        <div>
+            <a href="/deletepick{{p.id}}">X</a>
+            {{p.team}}
+            
+        </div>
+    {% endfor %}
+    <br>
+    Games where one of these picks won: <br>
+    {% for w in winning_games %}
+        <div>{{w.id}}:
+            {{w.team1}}
+            vs.
+            {{w.team2}}. Winner: {{w.winner}}
+        </div>
+    {% endfor %}
+{% endif %}
 <hr>
 <br>
 

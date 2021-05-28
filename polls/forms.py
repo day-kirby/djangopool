@@ -16,10 +16,15 @@ class CreateNewPick(forms.ModelForm):
     class Meta: 
         model = Pick
         fields = ["team"] # player not needed, will be selected in the forms's context
-        #fields = ["player", "team"]
 
-    #player = forms.ModelChoiceField(queryset=Player.objects.all().order_by('name'))
-    team = forms.ModelChoiceField(queryset=Team.objects.all().order_by('name'))
+    # filter the teams list to not include already picked teams
+    # this works, and it's suprising that
+    # i didn't need to reference ModelChoiceField to make this work
+    def __init__(self, playerId, *args, **kwargs): # needed this to pass the player id in
+        super(CreateNewPick, self).__init__(*args, **kwargs) 
+        pickedTeams = Pick.objects.filter(player=playerId).values('team_id')
+        availTeams = Team.objects.exclude(id__in=pickedTeams).order_by('name')
+        self.fields['team'].queryset = availTeams # this sets the choices for the dropdown
 
 class CreateNewGame(forms.ModelForm):
     class Meta: 

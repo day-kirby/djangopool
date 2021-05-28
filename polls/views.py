@@ -35,13 +35,13 @@ def player(request, id):
     winning_games = Game.objects.filter(winner__in=picked_teams) # returns queryset from Game where winners are only picked teams
 
     if (request.method == 'POST'):
-        form = CreateNewPick(request.POST)
+        form = CreateNewPick(id, request.POST)
         if(form.is_valid()):    
             team = form.cleaned_data["team"]
             pk = Pick(player=player,team=team)
             pk.save()
     else:
-        form = CreateNewPick()
+        form = CreateNewPick(id)
 
    
     context = { # too much sent to template, just for testing
@@ -63,9 +63,17 @@ def editgame(request, id):
 
     if request.method == 'POST':
         form = CreateNewGame(request.POST, instance=gm)
+        msg = ""
         if(form.is_valid()):    
-            form.save()     
-        context = { 'game': gm, 'form': form }  
+
+            # create in-memory game in order to validate it
+            tempGame = form.save(commit=False)
+            msg = tempGame.statusMessage
+
+            if(msg == "OK"):
+                form.save()     
+
+        context = { 'game': gm, 'form': form, 'msg': msg }  
 
         #testing version:
         #context = { 'game': gm, 'team1_name': tm1.name, 'team2_name': tm2.name, 'winner_name': winner.name, 'form': form } 
@@ -93,19 +101,9 @@ def games(request):
 
             g = Game(team1=t1, team2=t2, winner=w)
 
-            t1_id = g.team1_id
-            t2_id = g.team2_id
-            w_id = g.winner_id
+            msg = g.statusMessage
 
-            # there is a team1, team2 and winner
-            all_ids= (t1_id > 0) and (t1_id > 0) and (w_id > 0)
-            # team 1 and 2 are different
-            diff_teams = (t1_id != t2_id)
-            # winner is one of the teams
-            valid_winner = (t1_id == w_id) or (t2_id == w_id)
-
-            if(all_ids and diff_teams and valid_winner):
-                
+            if(msg == "OK"):  
                 g.save()
 
                 form = CreateNewGame()
@@ -117,13 +115,7 @@ def games(request):
                 # probably better that this content is in template
                 # and that their visibility is controlled by a status variable
                 # eg status = 'same_teams'
-                msg = 'invalid!'
-                if(not valid_winner):
-                    msg = 'winner must be one of the teams'
-                if(not diff_teams):
-                    msg = 'teams must be different'
-                if(not all_ids):
-                    msg = 'must choose two teams and a winner'
+
                 context = { 'games': gms, 'form': form, 'msg': msg }
                 return render(request, 'polls/games.html', context)
 
@@ -150,4 +142,27 @@ def teams(request):
 
     context = { 'teams': tms, 'form': form }
     return render(request, 'polls/teams.html', context)
+
+def showpick(request, id):
+
+    pick = Pick.objects.get(id=id)
+    player = pick.player
+    player_id = player.id
+
+    playerUrl = "player" + str(player_id)
+
+    context = { 'pick': pick, 'player': player, 'id': player_id, 'url': playerUrl }
+    return render(request, 'polls/pick.html', context)
+
+def deletepick(request, id):
+
+    pick = Pick.objects.get(id=id)
+    player = pick.player
+    player_id = player.id
+
+    playerUrl = "player" + str(player_id)
+
+    pick.delete()
+
+    return (HttpResponseRedirect(playerUrl))
 

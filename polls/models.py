@@ -4,7 +4,7 @@ from django.db import models
 
 class Player(models.Model): # user of pool, not player on a team
 
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, unique=True)
 
     @property
     def pick_count(self):
@@ -29,7 +29,7 @@ class Player(models.Model): # user of pool, not player on a team
 
 class Team(models.Model):
     
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, unique=True)
 
     @property
     def win_count(self):
@@ -43,11 +43,27 @@ class Game(models.Model):
     # teams that played the game
     team1 = models.ForeignKey(Team, related_name='team1', on_delete=models.DO_NOTHING)
     team2 = models.ForeignKey(Team, related_name='team2', on_delete=models.DO_NOTHING)
-    # winner of the game, by team id
-    # currently the winner can be a third team
-    # added validation is create form to avoid this case
-    # however, data migth be better if winner was a choice between "team1" and "team2"
     winner = models.ForeignKey(Team, related_name='winner', on_delete=models.DO_NOTHING)
+
+    @property
+    def differentTeams(self):
+        return(self.team1 != self.team2)
+
+    @property
+    def validWinner(self):
+        return((self.team1 == self.winner) or (self.team2 == self.winner))
+
+    @property
+    def statusMessage(self):
+        msg = "OK"
+        if(not self.validWinner):
+            msg = 'winner must be one of the teams'
+        if(not self.differentTeams):
+            msg = 'teams must be different'
+        #handled by form
+        #if(not all_ids):
+        #    msg = 'must choose two teams and a winner'
+        return(msg)
 
     def __str__(self) -> str:
         return 'game on!'

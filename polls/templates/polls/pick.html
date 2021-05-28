@@ -1,0 +1,15 @@
+{% extends 'polls/base.html' %}
+
+{% block content %}
+Pick
+
+{{pick.player}}
+
+{{pick.team}}
+
+{{player}}
+{{url}}
+
+<a href="/player{{id}}">Return</a>
+
+{% endblock %}

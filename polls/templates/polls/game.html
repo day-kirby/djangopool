@@ -5,7 +5,7 @@
 There was a game: 
 
 
-{{ game.team1 }}vs {{ game.team2 }}, and the winner was {{ game.winner }}
+{{ game.team1 }} vs {{ game.team2 }}, and the winner was {{ game.winner }}
 
 <br><br><br>
     Edit game:
@@ -16,8 +16,8 @@ There was a game:
     </form>
 
 <br><br>
-<div class="pool-info">
-Note that this form doesn't have the same validation as the form that adds a new game.
-Need to learn the Django way to do this kind of abstraction.
-</div>
+    {% if msg != 'OK' %}
+        {{msg}}
+    {% endif %}
+
 {% endblock %}
