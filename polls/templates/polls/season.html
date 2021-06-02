@@ -1,0 +1,86 @@
+{% extends 'polls/base.html' %}
+
+{% block content %}
+Pure Django Version:
+<div season-grid-mode="{{gridMode}}">
+    <a href="/season/games" mode-link="games">Games Played</a>
+    <a href="/season/home" mode-link="home">Home Games</a>
+    <a href="/season/wins" mode-link="wins">Games Won</a>
+</div>
+<br>
+<div class="team-row">
+    <div class="team-col">
+        Home team &gt;
+    </div>
+    {% for gridRow in grid %}
+        <div class="team-col">
+            {{gridRow.name}}
+        </div>
+    {% endfor %}
+</div>
+{% for gridRow in grid %}
+<div class="team-row">
+    <div class="team-col">
+        {{gridRow.name}}
+    </div>
+    {% for gridCell in gridRow.row %}
+    <div class="team-col">
+        {% comment "replacing big if else with value" %}
+            {% if gridMode == 'games' %}
+            {{gridCell.gameCount}}
+            {% elif gridMode == 'home' %}
+            {{gridCell.homeGames}}
+            {% endif %}
+        {% endcomment %}
+        {{gridCell.value}}
+    </div>
+    {% endfor %}
+</div>
+{% endfor %}
+<div id="jsSeasonModeContainer" season-grid-mode="games">
+<div>
+    <hr style="margin:40px 0px;">
+    Django and JS Version:
+    <br>
+    <a href="javascript:setSeasonMode('games')" mode-link="games">Games Played</a>
+    <a href="javascript:setSeasonMode('home')" mode-link="home">Home Games</a>
+    <a href="javascript:setSeasonMode('wins')" mode-link="wins">Games Won</a>
+    <br><br>
+</div>
+
+<div class="team-row">
+    <div class="team-col">Home team &gt;</div>
+    {% for gridRow in grid %}
+        <div class="team-col">
+            {{gridRow.name}}
+        </div>
+    {% endfor %}
+</div>
+{% for gridRow in grid %}
+<div class="team-row">
+    <div class="team-col">
+        {{gridRow.name}}
+    </div>
+    {% for gridCell in gridRow.row %}
+    <div class="team-col">
+        <div class="grid-cell grid-mode--game">
+            {{gridCell.gameCount}}
+        </div>
+        <div class="grid-cell grid-mode--home">
+            {{gridCell.homeGames}}
+        </div>
+        <div class="grid-cell grid-mode--wins">
+            {{gridCell.wins}}
+        </div>        
+    </div>
+    {% endfor %}
+</div>
+{% endfor %}
+</div>
+
+
+<div>
+    <hr style="margin:40px 0px;">
+    TODO - Django API and Vue Version:
+</div>
+{% endblock %}

@@ -4,6 +4,7 @@ from django.http.response import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from django.db.models import Count
+from django.conf.urls.static import static
 from .models import Game, Team, Player, Pick
 from .forms import CreateNewPlayer, CreateNewTeam, CreateNewGame, CreateNewPick
 
@@ -26,13 +27,23 @@ def index(request): # root of app lists players, could have called this view "pl
 
 def player(request, id):
 
-    player = Player.objects.get(id=id)
-    picks = Pick.objects.filter(player=player.id)
-
+    players = Player.objects.with_picks() # includes annotation pick_count
+    player = players.get(id=id)
+    picks = player.pickedTeams # equiv to Pick.objects.filter(player=player)
+    
     # don't really need these, they are just for testing / experimenting
-    pick_ids = Pick.objects.filter(player=player.id).values('team_id') # returns id's of picked teams
-    picked_teams = Team.objects.filter(id__in=pick_ids)  # return queryset from Team filtered on the picks
-    winning_games = Game.objects.filter(winner__in=picked_teams) # returns queryset from Game where winners are only picked teams
+    # note that gettting the queryset with just the id's was not necessary
+    #pick_ids = Pick.objects.filter(player=player.id).values('team_id') # returns id's of picked teams
+    #picked_teams = Team.objects.filter(id__in=pick_ids)  # return queryset from Team filtered on the picks
+    #picked_wins = Game.objects.filter(winner__in=picked_teams) # returns queryset from Game where winners are only picked teams
+
+    # the next two lines do the same job as the 3 lines above
+    pt = Team.objects.filter(team__in=picks)
+    pw = Game.objects.filter(winner__in=pt)
+
+    # this line combines the previous two, and works
+    # is there any performance savings to do it this way?
+    #pw_oneline = Game.objects.filter(winner__in=Team.objects.filter(team__in=picks))
 
     if (request.method == 'POST'):
         form = CreateNewPick(id, request.POST)
@@ -44,22 +55,16 @@ def player(request, id):
         form = CreateNewPick(id)
 
    
-    context = { # too much sent to template, just for testing
+    context = { 
         'p': player, 
-        'picks': picks, 
+        'picks': picks,
+        'picked_wins': pw,
         'form': form, 
-        'picked_teams': picked_teams, 
-        'winning_games': winning_games 
     }
     return render(request, 'polls/player.html', context)
 
 def editgame(request, id):
     gm = Game.objects.get(id=id)
-
-    # for testing, these are not needed
-    #tm1 = Team.objects.get(id=gm.team1_id)
-    #tm2 = Team.objects.get(id=gm.team2_id)
-    #winner = Team.objects.get(id=gm.winner_id)
 
     if request.method == 'POST':
         form = CreateNewGame(request.POST, instance=gm)
@@ -75,8 +80,6 @@ def editgame(request, id):
 
         context = { 'game': gm, 'form': form, 'msg': msg }  
 
-        #testing version:
-        #context = { 'game': gm, 'team1_name': tm1.name, 'team2_name': tm2.name, 'winner_name': winner.name, 'form': form } 
         return render(request, 'polls/game.html', context)
     else:
 
@@ -88,8 +91,73 @@ def editgame(request, id):
         #context = { 'game': gm, 'team1_name': tm1.name, 'team2_name': tm2.name, 'winner_name': winner.name, 'form': form }
         return render(request, 'polls/game.html', context)
 
+def season(request, mode=None):
+    gms = Game.objects.all()
+    teams = Team.objects.with_wins()
+
+    if(mode==None):
+        mode = "games"
+
+    gameGrid = []
+    for t1 in teams:
+        gameGridRow = []
+        for t2 in teams:
+
+            # default values
+            # won't be replaced when teams are compared with themselves
+            gameCount = "-"
+            homeGames = "-"
+            awayGames = "-"
+            homeWins = "-"
+            winCount = "-"
+
+            value = "-"
+
+            if(t1 != t2): # games are never between a team and itself
+                hg = gms.filter(team1=t1,team2=t2)
+                homeGames = hg.count()
+                ag = gms.filter(team2=t1,team1=t2)
+                awayGames = ag.count()
+                gameCount = homeGames + awayGames
+
+                #wins = t1.win_count # this is wrong - this counts across teams
+
+                winningHomeGames = hg.filter(winner=t1)
+                winningAwayGames = ag.filter(winner=t1)
+                winCount = winningHomeGames.count() + winningAwayGames.count()
+
+                # note py 3.10 includes a "match" method for this kind of thing
+                if(mode == 'games'):
+                    value = gameCount
+                elif(mode == 'wins'):
+                    value = winCount
+                elif(mode == 'home'):
+                    value = homeGames
+            
+            gameProps = {
+                # for js version, need all values in the dom
+                'gameCount': gameCount, 
+                'awayGames': awayGames,
+                'homeGames': homeGames,
+                'wins': winCount,
+                # only need value for 'django' version
+                'value': value
+            }
+
+            gameGridRow.append(gameProps)
+        gameGrid.append({ 'name': t1.name, 'row': gameGridRow })
+
+    gridMode = 'homeGames'
+
+    context = { 'games': gms, 'teams': teams, 'grid': gameGrid, 'gridMode': mode, 'msg': '' }
+
+    return render(request, 'polls/season.html', context)
+
 def games(request):
     gms = Game.objects.all()
+    teams = Team.objects.all()
+
+    context = { 'games': gms, 'teams': teams, 'msg': '' }
 
     if request.method == 'POST':
         form = CreateNewGame(request.POST)
@@ -107,7 +175,7 @@ def games(request):
                 g.save()
 
                 form = CreateNewGame()
-                context = { 'games': gms, 'form': form, 'msg': '' }
+                context['form'] = form
                 return render(request, 'polls/games.html', context)
 
             else: 
@@ -116,17 +184,17 @@ def games(request):
                 # and that their visibility is controlled by a status variable
                 # eg status = 'same_teams'
 
-                context = { 'games': gms, 'form': form, 'msg': msg }
+                context['form'] = form
                 return render(request, 'polls/games.html', context)
 
     else:
         form = CreateNewGame()
 
-        context = { 'games': gms, 'form': form, 'msg': '' }
+        context['form'] = form
         return render(request, 'polls/games.html', context)
 
 def teams(request):
-    tms = Team.objects.all()
+    tms = Team.objects.with_wins()
 
     if request.method == 'POST':
         form = CreateNewTeam(request.POST)

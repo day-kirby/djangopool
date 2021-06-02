@@ -27,6 +27,59 @@
   .pool-info{
        width:300px;font-size:12px;margin-top:20px;
   } 
+
+  .team-row{
+      clear:both;
+      border-bottom:solid 1px #aaa;
+      height:26px;
+  }
+
+  .team-col{
+      float:left;
+      width:150px;
+      height:20px;
+      margin:3px;
+      border-right:solid 1px #aaa;
+  }
+
+  .grid-cell{
+      display:none;
+  }
+
+  [mode-link] {
+      display:inline-block;
+      margin-top:5px;
+      padding:5px 10px;
+      text-decoration:none;
+      background:#ccc;
+      color:#000;
+  }
+
+  [season-grid-mode='games'] [mode-link='games'] {
+      background:#696;
+      color:#fff;
+  }
+  [season-grid-mode='home'] [mode-link='home'] {
+      background:#696;
+      color:#fff;
+  }
+  [season-grid-mode='wins'] [mode-link='wins'] {
+      background:#696;
+      color:#fff;
+  }
+
+  [season-grid-mode='games'] .grid-mode--game {
+      display:block;
+  }
+
+  [season-grid-mode='home'] .grid-mode--home {
+      display:block;
+  }
+
+    [season-grid-mode='wins'] .grid-mode--wins {
+      display:block;
+  }
+
 </style>
 
 <title>NHL POOL</title>
@@ -39,11 +92,28 @@
         <a href="/">Players</a>
         <a href="/teams">Teams</a>
         <a href="/games">Games</a>
+        <a href="/season">Season</a>
     </div>
     <div class="pool-body">
         {% block content %}
         {% endblock %}
     </div>
+    <div id="app">
+    
+        <h3>Mini Vue test: my name is[[firstName]]=</h3>
+    </div>
+    {% load static %}
+    <script src="https://unpkg.com/vue@3.0.5"></script>
+    <script src="{% static 'polls/app.js' %}"></script>
 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script>
+
+    function setSeasonMode(mode){
+        $("#jsSeasonModeContainer").attr("season-grid-mode",mode)
+    }
+
+    </script>
 </body>
 </html>

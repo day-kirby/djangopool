@@ -8,18 +8,19 @@ Player: {{p.name}}
 No picks yet
 {% endif %}
 {% if p.pick_count > 0 %}
-    Picks:
+    Picks ({{p.pick_count}}):
     <br>
     {% for p in picks %}
         <div>
             <a href="/deletepick{{p.id}}">X</a>
-            {{p.team}}
+            {{p.team}} 
+            <!-- ({{p.team.win_count}} wins) -->
             
         </div>
     {% endfor %}
     <br>
-    Games where one of these picks won: <br>
-    {% for w in winning_games %}
+    Games where one of these picks won ({{p.win_count}}): <br>
+    {% for w in picked_wins %}
         <div>{{w.id}}:
             {{w.team1}}
             vs.
@@ -39,6 +40,7 @@ Add a pick:
     </form>
 
     <div class="pool-info">
-        No validation - player can pick the same team twice. Cannot delete pick.
+        Already picked teams don't appear in list. <br>
+        Click x in list at top to delete a pick.
     </div>
 {% endblock %} 

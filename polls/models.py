@@ -1,22 +1,69 @@
 from django.db import models
+from django.db.models import Avg, Count, Min, Sum
 
 # note - none of these objects can be deleted through the app at this point
+
+class PlayerManager(models.Manager):
+    def with_picks(self):
+        # the number of records (picks) where the player = self
+        # seems that python is smart enough to know that Pick is the right model
+        # without having to specify it, which is great (but not very explicit)
+        pCount = Count("player") 
+
+        # attempting to add win count as an annotation to player
+        #a = Pick.objects.filter(player=self.id).values('team') 
+        #t = Team.objects.filter(id__in=a).values("id")
+        #w = Game.objects.filter(winner__in=t).count() 
+
+        wCount = Count("player__team__winner")
+
+        return self.annotate(
+            #win_count = wCount, #doesn't work
+            pick_count = pCount
+        )
 
 class Player(models.Model): # user of pool, not player on a team
 
     name = models.CharField(max_length=200, unique=True)
 
+    # get objects property with added feilds
+    # note PlayerManager doesn't need argument, even though
+    # it's expecting a manager object, 
+    # python seems to pick this up in context
+    objects = PlayerManager() 
+
+    #this was moved to manager
+    #@property
+    #def pick_count(self):
+    #    return self.player.count()
+
     @property
-    def pick_count(self):
-        return self.player.count()
+    def pickedTeams(self):
+        return Pick.objects.filter(player=self.id)
+     
 
     @property
     def win_count(self):
-        # there should be a better way to do this!
-        # e.g. get a set of all games where the winner is one of the picks
-        # note that the "player" view has an alternative way to get list of wins
-        # hoping to learn a one-liner for this
+
+        # this works but i hate it
+        #a = Pick.objects.filter(player=self.id).values('team') 
+        #t = Team.objects.filter(id__in=a).values("id")
+        #w = Game.objects.filter(winner__in=t).count() 
+
+        # this is a bit better but would love a one-liner
+        # or to put into manager
         picks = Pick.objects.filter(player=self.id)
+        teams = Team.objects.filter(team__in=picks)
+        wins = Game.objects.filter(winner__in=teams)
+        w = wins.count()
+
+        return w
+
+    @property
+    def win_count2(self):
+        picks = Pick.objects.filter(player=self.id).select_related('team')
+
+        # this works, but is inferior to win_count above
         w = 0
         for p in picks:
             wins = Game.objects.filter(winner=p.team)
@@ -27,15 +74,23 @@ class Player(models.Model): # user of pool, not player on a team
     def __str__(self) -> str:
         return self.name
 
+class TeamManager(models.Manager):
+    def with_wins(self):
+        return self.annotate(
+            win_count = Count('winner')
+        )
+
 class Team(models.Model):
     
     name = models.CharField(max_length=200, unique=True)
+    objects = TeamManager()
 
-    @property
-    def win_count(self):
-        # number of games that a team is the winner
-        return self.winner.count()
-
+    #moved this to a manager
+    #@property
+    #def win_count(self):
+    #    # number of games that a team is the winner
+    #    return self.winner.count()
+    
     def __str__(self) -> str:
         return self.name
 
@@ -79,6 +134,11 @@ class Pick(models.Model):
 
     def __str__(self) -> str:
         return 'good choice'
+
+
+
+#class Season():
+
 
 #models from original demo ---------
 
