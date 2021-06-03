@@ -1,12 +1,14 @@
 
-from django.http import response
+from django.http import response, HttpResponse
 from django.http.response import HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse
+from django.views import View
+from django.views.generic import ListView
+from django.shortcuts import redirect, render, get_object_or_404
 from django.db.models import Count
 from django.conf.urls.static import static
 from .models import Game, Team, Player, Pick
-from .forms import CreateNewPlayer, CreateNewTeam, CreateNewGame, CreateNewPick
+from .forms import CreateNewPlayer, CreateNewTeam, CreateNewGame, CreateNewPick, NavigatePlayersForm
+
 
 def index(request): # root of app lists players, could have called this view "players"
     players = Player.objects.all()
@@ -31,6 +33,8 @@ def player(request, id):
     player = players.get(id=id)
     picks = player.pickedTeams # equiv to Pick.objects.filter(player=player)
     
+
+
     # don't really need these, they are just for testing / experimenting
     # note that gettting the queryset with just the id's was not necessary
     #pick_ids = Pick.objects.filter(player=player.id).values('team_id') # returns id's of picked teams
@@ -46,19 +50,34 @@ def player(request, id):
     #pw_oneline = Game.objects.filter(winner__in=Team.objects.filter(team__in=picks))
 
     if (request.method == 'POST'):
-        form = CreateNewPick(id, request.POST)
-        if(form.is_valid()):    
-            team = form.cleaned_data["team"]
-            pk = Pick(player=player,team=team)
-            pk.save()
+        if ('select_player' in request.POST):
+            # navigation
+
+            navForm = NavigatePlayersForm(request.POST)
+            print(navForm) # for some reason removing this breaks it :(
+            dropdownPlayer = navForm.cleaned_data["player"]
+
+            playerUrl = "player" + str(dropdownPlayer.id)
+            return (HttpResponseRedirect(playerUrl))
+
+        else:
+            # creating a new pick
+            form = CreateNewPick(id, request.POST)
+            if(form.is_valid()):    
+                team = form.cleaned_data["team"]
+                pk = Pick(player=player,team=team)
+                pk.save()
     else:
         form = CreateNewPick(id)
 
-   
+    navForm = NavigatePlayersForm()
+
     context = { 
         'p': player, 
+        'players': players, #for navitation
         'picks': picks,
         'picked_wins': pw,
+        'navForm': navForm,
         'form': form, 
     }
     return render(request, 'polls/player.html', context)
@@ -136,9 +155,9 @@ def season(request, mode=None):
             
             gameProps = {
                 # for js version, need all values in the dom
-                'gameCount': gameCount, 
-                'awayGames': awayGames,
-                'homeGames': homeGames,
+                'games': gameCount, 
+                'away': awayGames,
+                'home': homeGames,
                 'wins': winCount,
                 # only need value for 'django' version
                 'value': value
@@ -193,8 +212,24 @@ def games(request):
         context['form'] = form
         return render(request, 'polls/games.html', context)
 
+class TeamsListView(ListView):
+    model = Team
+    template_name = "polls/teams_listview.html"
+
+class TeamsView(View):
+
+    test = "test"  
+    tms = Team.objects.with_wins() 
+
+    def get(self, request):
+        #
+        return HttpResponse(self.test)
+
+class TeamsViewSub(TeamsView): # tiny cbv inheritance test
+    test = "woah"
+
 def teams(request):
-    tms = Team.objects.with_wins()
+    tms = Team.objects.with_wins().order_by('id')
 
     if request.method == 'POST':
         form = CreateNewTeam(request.POST)
@@ -205,8 +240,6 @@ def teams(request):
 
     else:
         form = CreateNewTeam()
-
-    gms = Game.objects.all()
 
     context = { 'teams': tms, 'form': form }
     return render(request, 'polls/teams.html', context)

@@ -1,15 +1,22 @@
 {% extends 'polls/base.html' %}
 
 {% block content %}
-Players:
 
+<div class="team-row">
+    <div class="team-col">Player</div>
+    <div class="team-col">Picks</div>
+    <div class="team-col">Points</div>
+</div>
 {% for p in players %}
-    <div>
-        <a href="/player{{p.id}}">
-        {{p.id}}:
-        {{p.name}}
-        - Points: {{p.win_count}} 
-        </a>
+    <div class="team-row">
+        <div class="team-col">
+            <a href="{% url 'player' p.id %}">
+            {{p.id}}:
+            {{p.name}}</a>
+        </div>
+        <div class="team-col">{{p.teamCount}} </div>
+        <div class="team-col">{{p.win_count}} </div>
+
     </div>
 {% endfor %}
 <br>

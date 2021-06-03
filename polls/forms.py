@@ -2,6 +2,13 @@ from django import forms
 from django.db.models import fields
 from .models import Team, Game, Player, Pick
 
+class NavigatePlayersForm(forms.ModelForm):
+    class Meta:
+        model = Player
+        fields = ["player"]
+
+    player = forms.ModelChoiceField(queryset=Player.objects.all().order_by('name'))
+
 class CreateNewPlayer(forms.ModelForm):
     class Meta: 
         model = Player

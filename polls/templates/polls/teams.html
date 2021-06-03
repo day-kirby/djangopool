@@ -1,11 +1,13 @@
 {% extends 'polls/base.html' %}
+{% load static %}
 
 {% block content %}
 Teams:
 
 {% for t in teams %}
     <div>
-        {{t.id}}:
+        {{t.id}}: 
+        <img class="team-thumb" src="{% static t.imageFileName %}" alt="My image"/>
         {{t.name}}
 
         {% include "../polls/team_summary.html" with team=t %}

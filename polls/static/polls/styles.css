@@ -1,0 +1,84 @@
+
+
+body {
+    margin:0px;
+    font-family: arial;
+    line-height:20px;
+    font-size:14px;
+}
+
+.team-thumb {
+    max-width: 20px;
+    max-height: 20px;
+}
+
+.pool-menu {
+    padding:10px 20px 20px 10px;
+    margin-bottom:20px;
+    box-shadow:0px 0px 10px 10px rgba(0,0,0,0.4);
+}
+
+.pool-menu a {
+    margin-left:10px;
+}
+
+.pool-body {
+    margin:40px;
+}
+
+.pool-info{
+    width:300px;font-size:12px;margin-top:20px;
+} 
+
+.team-row{
+    clear:both;
+    border-bottom:solid 1px #aaa;
+    height:26px;
+}
+
+.team-col{
+    float:left;
+    width:150px;
+    height:20px;
+    margin:3px;
+    border-right:solid 1px #aaa;
+}
+
+.grid-cell{
+    display:none;
+}
+
+[mode-link] {
+    display:inline-block;
+    margin-top:5px;
+    padding:5px 10px;
+    text-decoration:none;
+    background:#ccc;
+    color:#000;
+}
+
+[season-grid-mode='games'] [mode-link='games'] {
+    background:#696;
+    color:#fff;
+}
+[season-grid-mode='home'] [mode-link='home'] {
+    background:#696;
+    color:#fff;
+}
+[season-grid-mode='wins'] [mode-link='wins'] {
+    background:#696;
+    color:#fff;
+}
+
+[season-grid-mode='games'] .grid-mode--game {
+    display:block;
+}
+
+[season-grid-mode='home'] .grid-mode--home {
+    display:block;
+}
+
+[season-grid-mode='wins'] .grid-mode--wins {
+    display:block;
+}
+

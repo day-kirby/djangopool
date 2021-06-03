@@ -5,7 +5,7 @@ Games:
 
 {% for g in games %}
     <div>
-        <a href="/editgame{{g.id}}">{{g.id}}</a>
+        <a href="{% 'editgame' g.id %}">{{g.id}}</a>
         :
         {{g.team1}}
         vs.

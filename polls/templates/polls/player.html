@@ -12,7 +12,7 @@ No picks yet
     <br>
     {% for p in picks %}
         <div>
-            <a href="/deletepick{{p.id}}">X</a>
+            <a href="{% url 'deletepick' p.id %}">X</a>
             {{p.team}} 
             <!-- ({{p.team.win_count}} wins) -->
             
@@ -43,4 +43,22 @@ Add a pick:
         Already picked teams don't appear in list. <br>
         Click x in list at top to delete a pick.
     </div>
+
+<hr>
+<br>
+Navigate players (experiment)
+
+<form method="POST" action="">
+    {% csrf_token %}
+    {{navForm.as_p}}
+    {% comment %}    
+    <select name="player_dropdown">
+         {% for player in players %}
+        <option value="{{player.id}}">{{player.name}}</option>
+        {% endfor %}
+    </select>
+    {% endcomment %}   
+    <button type="submit" name="select_player">Select</button>
+</form>
+
 {% endblock %} 

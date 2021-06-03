@@ -1,0 +1,13 @@
+{% extends 'polls/base.html' %}
+
+{% block content %}
+Teams:
+
+{% for t in object_list %}
+    <div>
+        {{t.id}}:
+        {{t.name}}
+    </div>
+{% endfor %}
+
+{% endblock %}

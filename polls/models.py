@@ -15,7 +15,7 @@ class PlayerManager(models.Manager):
         #t = Team.objects.filter(id__in=a).values("id")
         #w = Game.objects.filter(winner__in=t).count() 
 
-        wCount = Count("player__team__winner")
+        #wCount = Count("player__team__winner")
 
         return self.annotate(
             #win_count = wCount, #doesn't work
@@ -37,6 +37,12 @@ class Player(models.Model): # user of pool, not player on a team
     #def pick_count(self):
     #    return self.player.count()
 
+    def calculateNumTeams(self):
+        nt = Pick.objects.filter(player=self.id).count()
+        return nt
+
+    teamCount = property(calculateNumTeams)
+
     @property
     def pickedTeams(self):
         return Pick.objects.filter(player=self.id)
@@ -52,10 +58,15 @@ class Player(models.Model): # user of pool, not player on a team
 
         # this is a bit better but would love a one-liner
         # or to put into manager
-        picks = Pick.objects.filter(player=self.id)
+        player = Player.objects.get(id=self.id)
+        #picks = Pick.objects.filter(player=self.id) - next line is equivalent
+        picks = self.player.all()
         teams = Team.objects.filter(team__in=picks)
         wins = Game.objects.filter(winner__in=teams)
+        #wins = self.player.all().winner.all() # this doesn't work
         w = wins.count()
+
+        
 
         return w
 
@@ -83,6 +94,7 @@ class TeamManager(models.Manager):
 class Team(models.Model):
     
     name = models.CharField(max_length=200, unique=True)
+    imageFileName = models.CharField(max_length=200, default="file.jpg")
     objects = TeamManager()
 
     #moved this to a manager

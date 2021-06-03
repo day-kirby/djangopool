@@ -1,4 +1,5 @@
 {% extends 'polls/base.html' %}
+{% load app_filters %}
 
 {% block content %}
 Pure Django Version:
@@ -21,18 +22,16 @@ Pure Django Version:
 {% for gridRow in grid %}
 <div class="team-row">
     <div class="team-col">
-        {{gridRow.name}}
+        vs. {{gridRow.name}}
     </div>
     {% for gridCell in gridRow.row %}
     <div class="team-col">
-        {% comment "replacing big if else with value" %}
-            {% if gridMode == 'games' %}
-            {{gridCell.gameCount}}
-            {% elif gridMode == 'home' %}
-            {{gridCell.homeGames}}
-            {% endif %}
+        {% comment "These are the same, thanks to the added hash filter!" %}
+        {{gridCell.value}} - value is slected in view
+        {{gridCell|hash:gridMode}} - dictionary lookup i.e. gridCell[gridMode]
         {% endcomment %}
-        {{gridCell.value}}
+
+        {{gridCell|hash:gridMode}}
     </div>
     {% endfor %}
 </div>
@@ -59,15 +58,15 @@ Pure Django Version:
 {% for gridRow in grid %}
 <div class="team-row">
     <div class="team-col">
-        {{gridRow.name}}
+       vs. {{gridRow.name}}
     </div>
     {% for gridCell in gridRow.row %}
     <div class="team-col">
         <div class="grid-cell grid-mode--game">
-            {{gridCell.gameCount}}
+            {{gridCell.games}}
         </div>
         <div class="grid-cell grid-mode--home">
-            {{gridCell.homeGames}}
+            {{gridCell.home}}
         </div>
         <div class="grid-cell grid-mode--wins">
             {{gridCell.wins}}
