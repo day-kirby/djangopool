@@ -74,7 +74,7 @@ def player(request, id):
 
     context = { 
         'p': player, 
-        'players': players, #for navitation
+        'players': players, #for navigation
         'picks': picks,
         'picked_wins': pw,
         'navForm': navForm,
@@ -116,6 +116,11 @@ def season(request, mode=None):
 
     if(mode==None):
         mode = "games"
+
+    # all of the grid stuff below has been moved into a template tag
+    # which is much nicer. however at the moment i still need this
+    # in this view function for the javaScript version, which 
+    # i can fix later
 
     gameGrid = []
     for t1 in teams:

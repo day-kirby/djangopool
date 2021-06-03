@@ -1,0 +1,29 @@
+{% load app_filters %}
+<div class="team-row">
+    <div class="team-col">
+        Home team &gt;
+    </div>
+    {% for gridRow in grid %}
+        <div class="team-col">
+            {{gridRow.name}}
+        </div>
+    {% endfor %}
+</div>
+{% for gridRow in grid %}
+<div class="team-row">
+    <div class="team-col">
+        vs. {{gridRow.name}}
+    </div>
+    {% for gridCell in gridRow.row %}
+    <div class="team-col">
+        {% comment "These are the same, thanks to the added hash filter!" %}
+        {{gridCell.value}} - value is slected in view
+        {{gridCell|hash:gridMode}} - dictionary lookup i.e. gridCell[gridMode]
+        For some reason the hash isn't working within the tempateTag :( 
+        {% endcomment %}
+
+        {{gridCell.value}}
+    </div>
+    {% endfor %}
+</div>
+{% endfor %}
